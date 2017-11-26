@@ -17,6 +17,7 @@ class Main(QMainWindow):
         self.setLayout(self.vbox)
 
         self.dockwidget = QDockWidget("Execute SQL")
+        self.dockwidget.resize(500, 350)
         self.dockwidget.setWidget(self.sqlWorkstation)
         self.dockwidget.setAllowedAreas(Qt.AllDockWidgetAreas)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
