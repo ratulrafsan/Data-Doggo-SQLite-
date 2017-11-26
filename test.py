@@ -1,7 +1,7 @@
 from PyQt5.Qt import *
 
 from loadDatabase import Loader
-from sqlEditor import SQLWorkbench
+from SQLWorkbench import SQLWorkbench
 
 import sys
 

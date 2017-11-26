@@ -8,7 +8,7 @@ from PyQt5.QtCore import *
 from structure import DBStructure
 from dataBrowser import DataBrowser
 
-from sqlEditor import SQLWorkbench
+from SQLWorkbench import SQLWorkbench
 
 # Note to experienced qt programmers: I have deliberately ignored QT's sql interface system for this project
 
