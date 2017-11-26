@@ -7,10 +7,25 @@ class SQLWorkbench(QWidget):
         super().__init__()
 
         self.parentLayout = QVBoxLayout()
+        self.toolbarLayout = QHBoxLayout()
 
-        self.x = QLabel("Dock me!")
-        self.parentLayout.addWidget(self.x)
+        # toolbar
+        self.toolbar = QToolBar()
+        self.btn_addTab = QToolButton()
+        self.btn_saveSql = QToolButton()
+        self.btn_runSql = QToolButton()
+
         self.initGUI()
 
     def initGUI(self):
+        self.setupToolbar()
         self.setLayout(self.parentLayout)
+
+    def setupToolbar(self):
+        self.toolbarLayout.addWidget(self.btn_addTab)
+        self.toolbarLayout.addWidget(self.btn_runSql)
+        self.toolbarLayout.addWidget(self.btn_saveSql)
+
+        self.toolbar.setLayout(self.toolbarLayout)
+        self.parentLayout.addWidget(self.toolbar)
+        self.parentLayout.addWidget(QLabel("Dock me!"))
