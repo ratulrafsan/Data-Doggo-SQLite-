@@ -1,9 +1,10 @@
+import sys
+
 from PyQt5.Qt import *
 
+from components.SQLWorkbench.SQLWorkbench import SQLWorkbench
 from loadDatabase import Loader
-from SQLWorkbench import SQLWorkbench
 
-import sys
 
 class Main(QMainWindow):
     def __init__(self):

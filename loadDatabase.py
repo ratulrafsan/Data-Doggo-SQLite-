@@ -1,14 +1,9 @@
-import os
-import sys
-
-from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 
-from structure import DBStructure
-from dataBrowser import DataBrowser
+from components.dataBrowser import DataBrowser
+from components.structure import DBStructure
 
-from SQLWorkbench import SQLWorkbench
 
 # Note to experienced qt programmers: I have deliberately ignored QT's sql interface system for this project
 
