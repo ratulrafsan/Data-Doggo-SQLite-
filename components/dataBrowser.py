@@ -14,6 +14,7 @@ class DataBrowser(QWidget):
         self.btn_deleteRecord = QPushButton("Delete Record")
 
         self.defaultTable = ""
+        self.currentTable = ""
 
         self.tableView = QTableWidget()
         self.initGUI()
@@ -35,7 +36,16 @@ class DataBrowser(QWidget):
         self.btn_deleteRecord.clicked.connect(self.deleteRow)
 
     def deleteRow(self):
-        pass
+        index = self.tableView.currentIndex()
+        column = self.tableView.currentColumn()
+        item = self.tableView.itemFromIndex(index)
+
+        columnName = self.loader.dbManager.getColumnNames(self.currentTable)[column]
+        self.loader.dbManager.deleteRow(self.currentTable, columnName, item.text())
+
+        self.tableView.model().removeRow(index.row())
+        self.tableView.model().submit()
+
 
     def addNewRow(self):
         pass
@@ -61,6 +71,7 @@ class DataBrowser(QWidget):
         self.setupAndPopulateTable(self.defaultTable)
 
     def setupAndPopulateTable(self, tableName):
+        self.currentTable = tableName
         while self.tableView.model().rowCount() > 0:
             self.tableView.model().removeRow(0)
 
