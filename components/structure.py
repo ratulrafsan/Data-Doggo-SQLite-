@@ -16,6 +16,7 @@ class DBStructure(QWidget):
 
         self.initGUI()
 
+    # boop
     def initGUI(self):
         self.setLayout(self.parentLayout)
 
