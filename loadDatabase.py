@@ -32,7 +32,7 @@ class Loader(QWidget):
 
         self.tabs = QTabWidget()
         self.dbStructure = DBStructure(self)
-        self.dataBrowser = DataBrowser()
+        self.dataBrowser = DataBrowser(self)
 
         self.btn_newDB = QCommandLinkButton(self.label_newDB)
         self.btn_openDB = QCommandLinkButton(self.label_openDB)
@@ -53,10 +53,7 @@ class Loader(QWidget):
         self.setLayout(self.parentVerticalLayout)
 
         self.dbLoaded.connect(self.dbStructure.setupTreeView)
-
-        #self.setWindowTitle("Data Doggo")
-        #self.setGeometry(200, 200, 600, 400)
-        #self.show()
+        self.dbLoaded.connect(self.dataBrowser.setupTools)
 
     def setupCommandButtons(self):
         self.btn_newDB.clicked.connect(self.newDB)

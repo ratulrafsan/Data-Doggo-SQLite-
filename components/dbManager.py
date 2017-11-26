@@ -19,9 +19,21 @@ class DBManager():
             self.error = e
             return False
 
-    def getColumnNames(self):
-        if self.isTable:
+    def getColumnNames(self, tableName):
+        try:
+            sql = "select * from {}".format(tableName)
+            self.cursor.execute(sql)
             return [column[0] for column in self.cursor.description]
+        except Exception as e:
+            self.error = e
+        return None
+
+    def getAllData(self, tableName):
+        try:
+            sql = "select * from {}".format(tableName)
+            return self.cursor.execute(sql).fetchall()
+        except Exception as e:
+            self.error = e
         return None
 
     def getError(self):
@@ -45,3 +57,16 @@ class DBManager():
         except Exception as e:
             self.error = e
             return None
+
+    def getColumnCount(self, tableName):
+        data = self.getColumnNames(tableName)
+        if data is not None:
+            return len(data)
+        return 0
+
+    def deleteRow(self, table, columnName, identifier):
+        try:
+            sql = "delete from {} where {}={}".format(table, columnName, identifier)
+            self.cursor.execute(sql)
+        except Exception as e:
+            self.error = e

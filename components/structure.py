@@ -41,7 +41,7 @@ class DBStructure(QWidget):
                 print("Error :" + self.loader.dbManager.error)
                 return
 
-        tableRootNode = QStandardItem("Tables" + str(len(tables)))
+        tableRootNode = QStandardItem("Tables (" + str(len(tables)) + ")")
         for table in tables:
             colType = self.loader.dbManager.getColumnTypes(table)
             if colType is None:
