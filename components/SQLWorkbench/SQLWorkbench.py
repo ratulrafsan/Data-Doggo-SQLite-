@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from os import access, W_OK, R_OK
+
+from PyQt5.Qt import *
 
 from components.SQLWorkbench.editor import Editor
 from components.sqlLogger import Logger
@@ -54,6 +54,8 @@ class SQLWorkbench(QWidget):
         self.btn_saveSql.clicked.connect(self.saveEditorInput)
         self.toolbarLayout.addWidget(self.btn_saveSql)
 
+        self.toolbarLayout.addStretch(1)
+
         self.parentLayout.addLayout(self.toolbarLayout)
 
     def setupEditorTab(self):
@@ -93,6 +95,8 @@ class SQLWorkbench(QWidget):
     def openSqlCode(self):
         editor = self.editorTabs.currentWidget()
         filePath = self.chooseFile()
+        if filePath is None:
+            return
         try:
             with open(filePath, 'r') as f:
                 editor.setPlainText(f.read())
@@ -105,11 +109,23 @@ class SQLWorkbench(QWidget):
     def chooseFile(self):
         fileChooser = QFileDialog()
         if fileChooser.exec_() == QDialog.Accepted:
-            return fileChooser.selectedFiles()[0]
+            path = fileChooser.selectedFiles()[0]
+            # check if the user has r/w permission for the selected file
+            if not access(path, W_OK):
+                msg = "You do not have {} permission for that file. Continue ?".format(
+                    "read-write" if not access(path, R_OK) else "write"
+                )
+                response = QMessageBox.question(self, 'Notice!', msg,
+                                                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                if response == QMessageBox.Yes:
+                    return path
+        return None
 
 
     def saveEditorInput(self):
         filePath = self.chooseFile()
+        if filePath is None:
+            return
         try:
             with open(filePath, 'w') as f:
                 f.write(self.getEditorInput())

@@ -1,18 +1,22 @@
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from shutil import copy2
+from os.path import basename
+from os import access, W_OK, R_OK
+
+from PyQt5.Qt import *
 
 from components.dataBrowser import DataBrowser
 from components.structure import DBStructure
+from components.dbManager import DBManager
 
 
 # Note to experienced qt programmers: I have deliberately ignored QT's sql interface system for this project
 
 
 class Loader(QWidget):
+    dbLoaded = pyqtSignal()
+
     def __init__(self):
         super().__init__()
-
-        self.savePath = ""
 
         self.label_newDB = "New Database"
         self.label_openDB = "Open Database"
@@ -27,13 +31,18 @@ class Loader(QWidget):
         self.commandButtonLayout = QHBoxLayout(self)
 
         self.tabs = QTabWidget()
-        self.dbStructure = DBStructure()
+        self.dbStructure = DBStructure(self)
         self.dataBrowser = DataBrowser()
 
         self.btn_newDB = QCommandLinkButton(self.label_newDB)
         self.btn_openDB = QCommandLinkButton(self.label_openDB)
         self.btn_writeChanges = QCommandLinkButton(self.label_commitTDB)
         self.btn_rollbackChanges = QCommandLinkButton(self.label_rollbackDB)
+
+        self.databasePath = ""
+        self.fileName = ""
+        self.tempPath = ""
+        self.dbManager = None
 
         self.initGui()
 
@@ -43,13 +52,15 @@ class Loader(QWidget):
         self.setupTabs()
         self.setLayout(self.parentVerticalLayout)
 
+        self.dbLoaded.connect(self.dbStructure.setupTreeView)
+
         #self.setWindowTitle("Data Doggo")
         #self.setGeometry(200, 200, 600, 400)
         #self.show()
 
     def setupCommandButtons(self):
         self.btn_newDB.clicked.connect(self.newDB)
-        self.btn_openDB.clicked.connect(self.openDB)
+        self.btn_openDB.clicked.connect(self.newDB)
         self.btn_writeChanges.clicked.connect(self.writeChanges)
         self.btn_rollbackChanges.clicked.connect(self.revertChanges)
 
@@ -66,13 +77,30 @@ class Loader(QWidget):
 
         self.parentVerticalLayout.addWidget(self.tabs)
 
-    # create a copy of the original file and operate on the copy until commit
+    # create a copy of the original file and operate on the copy until commit(self.writeChanges method)
     def openDB(self):
-        pass
+        filePath = self.chooseFile()
+        if filePath is None:
+            return
 
-    # create a new database file via the sqlite database.
+
     def newDB(self):
-        pass
+        filePath = self.chooseFile()
+        if filePath is None:
+            return
+
+        self.dbManager = DBManager(filePath)
+        self.databasePath = filePath
+        self.fileName = basename(filePath)
+        self.createCopy()
+        print(self.databasePath)
+        if self.databasePath is not None:
+            self.dbLoaded.emit()
+
+    def createCopy(self):
+        self.tempPath = QDir.tempPath() + "/" + self.fileName
+        copy2(self.databasePath, self.tempPath)
+
 
     # commit everything to original file
     def writeChanges(self):
@@ -99,14 +127,21 @@ class Loader(QWidget):
 
         self.parentVerticalLayout.addLayout(self.createDatabaseLayout)
 
-    def getFile(self):
-        dlg = QFileDialog()
-        dlg.setWindowTitle("Open")
-        dlg.setViewMode(QFileDialog.Detail)
-
-        if dlg.exec_():
-            self.savePath = dlg.selectedFiles()[0]
-            self.LE_dbPath.setText(self.savePath)
+    def chooseFile(self):
+        fileChooser = QFileDialog()
+        if fileChooser.exec_() == QDialog.Accepted:
+            path = fileChooser.selectedFiles()[0]
+            # check if the user has r/w permission for the selected file
+            if not access(path, W_OK):
+                msg = "You do not have {} permission for that file. Continue ?".format(
+                    "read-write" if not access(path, R_OK) else "write"
+                )
+                response = QMessageBox.question(self, 'Notice!', msg,
+                                                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                if response == QMessageBox.Yes:
+                    return path
+            return path
+        return None
 
     def setupFont(self):
         self.font.setFamily("Lucidia")

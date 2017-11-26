@@ -20,7 +20,7 @@ class Main(QMainWindow):
         self.dockwidget.resize(500, 350)
         self.dockwidget.setWidget(self.sqlWorkstation)
         self.dockwidget.setAllowedAreas(Qt.AllDockWidgetAreas)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.dockwidget)
         self.setCentralWidget(self.mainSection)
 
         self.statusBar().showMessage("ready")
