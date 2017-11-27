@@ -11,7 +11,7 @@ class Main(QMainWindow):
         super().__init__()
 
         self.mainSection = Loader()
-        self.sqlWorkstation = SQLWorkbench()
+        self.sqlWorkstation = SQLWorkbench(self.mainSection)
         self.vbox = QVBoxLayout(self)
         self.vbox.addWidget(self.mainSection)
         self.setLayout(self.vbox)

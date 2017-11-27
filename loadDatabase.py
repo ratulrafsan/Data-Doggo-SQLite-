@@ -1,5 +1,5 @@
 from shutil import copy2
-from os.path import basename
+from os.path import basename, isfile
 from os import access, W_OK, R_OK
 
 from PyQt5.Qt import *
@@ -33,16 +33,18 @@ class Loader(QWidget):
         self.tabs = QTabWidget()
         self.dbStructure = DBStructure(self)
         self.dataBrowser = DataBrowser(self)
+        self.sqlworkbench = None
 
         self.btn_newDB = QCommandLinkButton(self.label_newDB)
         self.btn_openDB = QCommandLinkButton(self.label_openDB)
-        self.btn_writeChanges = QCommandLinkButton(self.label_commitTDB)
-        self.btn_rollbackChanges = QCommandLinkButton(self.label_rollbackDB)
 
         self.databasePath = ""
         self.fileName = ""
         self.tempPath = ""
         self.dbManager = None
+
+        self.written = False
+        self.canRevert = True
 
         self.initGui()
 
@@ -58,13 +60,9 @@ class Loader(QWidget):
     def setupCommandButtons(self):
         self.btn_newDB.clicked.connect(self.newDB)
         self.btn_openDB.clicked.connect(self.newDB)
-        self.btn_writeChanges.clicked.connect(self.writeChanges)
-        self.btn_rollbackChanges.clicked.connect(self.revertChanges)
 
         self.commandButtonLayout.addWidget(self.btn_newDB)
         self.commandButtonLayout.addWidget(self.btn_openDB)
-        self.commandButtonLayout.addWidget(self.btn_writeChanges)
-        self.commandButtonLayout.addWidget(self.btn_rollbackChanges)
 
         self.parentVerticalLayout.addLayout(self.commandButtonLayout)
 
@@ -87,25 +85,12 @@ class Loader(QWidget):
             return
 
         self.dbManager = DBManager(filePath)
+        self.dbLoaded.connect(self.sqlworkbench.enableEditor)
         self.databasePath = filePath
         self.fileName = basename(filePath)
-        self.createCopy()
         print(self.databasePath)
         if self.databasePath is not None:
             self.dbLoaded.emit()
-
-    def createCopy(self):
-        self.tempPath = QDir.tempPath() + "/" + self.fileName
-        copy2(self.databasePath, self.tempPath)
-
-
-    # commit everything to original file
-    def writeChanges(self):
-        pass
-
-    # replace original with the backup file
-    def revertChanges(self):
-        pass
 
     def setupCreateDatabase(self):
         self.LE_dbPath.setFont(self.font)
@@ -128,6 +113,12 @@ class Loader(QWidget):
         fileChooser = QFileDialog()
         if fileChooser.exec_() == QDialog.Accepted:
             path = fileChooser.selectedFiles()[0]
+            if not isfile(path):
+                try:
+                    f = open(basename(path), 'w')
+                except OSError as e:
+                    msg = "Cannot create file! " + e
+                    QMessageBox.critical(self, "ERROR", msg, QMessageBox.Ok, QMessageBox.Ok)
             # check if the user has r/w permission for the selected file
             if not access(path, W_OK):
                 msg = "You do not have {} permission for that file. Continue ?".format(

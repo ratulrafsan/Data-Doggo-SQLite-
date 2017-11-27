@@ -16,10 +16,16 @@ class DataBrowser(QWidget):
         self.defaultTable = ""
         self.currentTable = ""
 
+        self.prevItemVal = ""
+        self.prevRow = None
+        self.prevCol = None
+
+
         self.tableView = QTableWidget()
         self.initGUI()
 
     def initGUI(self):
+        self.tableView.cellDoubleClicked.connect(self.observe)
         self.toolsLayout.addWidget(QLabel("Table: "))
         self.toolsLayout.addWidget(self.tableComboBox)
         self.toolsLayout.addWidget(self.btn_newRecord)
@@ -30,10 +36,11 @@ class DataBrowser(QWidget):
 
     @pyqtSlot()
     def setupTools(self):
-
+        self.loader.dbManager.setDataBrowserReference(self)
         self.setupComboBox()
         self.btn_newRecord.clicked.connect(self.addNewRow)
         self.btn_deleteRecord.clicked.connect(self.deleteRow)
+        self.loader.dbManager.sqlExecuted.connect(self.updateComboBoxAndViewer)
 
     def deleteRow(self):
         index = self.tableView.currentIndex()
@@ -48,19 +55,72 @@ class DataBrowser(QWidget):
 
 
     def addNewRow(self):
-        pass
+        print("adding row")
+        self.loader.dbManager.addEmptyRow(self.currentTable)
+        self.setupAndPopulateTable(self.currentTable)
 
-    def editCell(self):
-        pass
+    def observe(self, row, col):
+        self.prevRow = row
+        self.prevCol = col
+        print("observing {} {}".format(row, col))
+        item = self.tableView.item(row, col)
+        self.prevItemVal = item.text()
+        self.tableView.itemDelegate().closeEditor.connect(self.checkForChange)
 
-    def setupComboBox(self):
+    def checkForChange(self):
+        self.tableView.itemDelegate().closeEditor.disconnect(self.checkForChange)
+        pItem = self.tableView.item(self.prevRow, self.prevCol)
+        print("Checking for changes..")
+        if self.prevItemVal == pItem.text():
+            print("No change. Continue")
+        else:
+            print("Change detected. Prev: {} Cur: {}".format(self.prevItemVal, pItem.text()))
+            self.doUpdate(pItem.text())
+
+    def doUpdate(self, updatingValue):
+        columnList = self.loader.dbManager.getColumnNames(self.currentTable)
+        currentRow = self.tableView.currentRow()
+        currentCol = self.tableView.currentColumn()
+        updatingCol = columnList[currentCol]
+        identifierList = list(columnList)
+        identifierList.remove(updatingCol)
+        identifierDataList = []
+        for i in range(0, self.tableView.columnCount()):
+            if i != currentCol:
+                identifierDataList.append(self.tableView.item(currentRow, i).text())
+        self.loader.dbManager.updateQueryConstructor(tableName=self.currentTable,
+                                                     identifierList=identifierList,
+                                                     identifierDataList=identifierDataList,
+                                                     updatingColumn=updatingCol,
+                                                     updatingValue=updatingValue)
+        self.setupAndPopulateTable(self.currentTable)
+
+    def updateComboBoxAndViewer(self):
+        self.tableComboBox.clear()
+
         tables = self.loader.dbManager.getListofTables()
 
-        if tables is None:
+        if tables == []:
             if self.loader.dbManager.error != "":
                 # TODO: Add proper error message here too!!
                 print("Error : " + self.loader.dbManager.error)
                 return
+            return
+
+        for table in tables:
+            self.tableComboBox.addItem(table)
+
+        self.setupAndPopulateTable(self.currentTable)
+
+    def setupComboBox(self):
+        tables = self.loader.dbManager.getListofTables()
+
+        if tables == []:
+            if self.loader.dbManager.error != "":
+                # TODO: Add proper error message here too!!
+                print("Error : " + self.loader.dbManager.error)
+                return
+            return
 
         for table in tables:
             self.tableComboBox.addItem(table)
@@ -98,3 +158,4 @@ class DataBrowser(QWidget):
             self.tableView.insertRow(rowPos)
             for i, data in enumerate(dataSet):
                 self.tableView.setItem(rowPos, i, QTableWidgetItem(str(data)))
+

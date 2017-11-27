@@ -7,10 +7,14 @@ from components.sqlLogger import Logger
 
 
 class SQLWorkbench(QWidget):
-    def __init__(self):
+    def __init__(self, loader):
         super().__init__()
 
         self.sqlLogger = Logger()
+        self.loader = loader
+
+        # help me
+        self.loader.sqlworkbench = self
 
         self.parentLayout = QVBoxLayout()
         self.toolbarLayout = QHBoxLayout()
@@ -46,7 +50,7 @@ class SQLWorkbench(QWidget):
 
         self.btn_runSql.setIcon(QIcon("resources/icon/run.png"))
         self.btn_runSql.setToolTip("Run")
-        self.btn_runSql.clicked.connect(self.getEditorInput)
+        self.btn_runSql.clicked.connect(self.runEditorInput )
         self.toolbarLayout.addWidget(self.btn_runSql)
 
         self.btn_saveSql.setIcon(QIcon("resources/icon/save.png"))
@@ -58,7 +62,13 @@ class SQLWorkbench(QWidget):
 
         self.parentLayout.addLayout(self.toolbarLayout)
 
+    @pyqtSlot()
+    def enableEditor(self):
+        #self.dbManager.setWorkBenchReference(self)
+        self.editorTabs.setEnabled(True)
+
     def setupEditorTab(self):
+        self.editorTabs.setEnabled(False)
         self.addNewEditorTab()
         self.editorTabs.setTabsClosable(True)
         self.editorTabs.tabCloseRequested.connect(self.removeEditorTab)
@@ -90,7 +100,7 @@ class SQLWorkbench(QWidget):
     def runEditorInput(self):
         input = self.getEditorInput()
         self.sqlLogger.addUserCode(input)
-        # TODO: implement code execution method!
+        self.loader.dbManager.executor(input)
 
     def openSqlCode(self):
         editor = self.editorTabs.currentWidget()
@@ -102,7 +112,7 @@ class SQLWorkbench(QWidget):
                 editor.setPlainText(f.read())
         except OSError as e:
             QMessageBox.information(self, "Error!",
-                                    "Failed to pen file: " + e,
+                                    "Failed to pen file: " + str(e),
                                     QMessageBox.Ok, QMessageBox.Ok)
 
 
@@ -131,7 +141,7 @@ class SQLWorkbench(QWidget):
                 f.write(self.getEditorInput())
         except OSError as e:
             QMessageBox.information(self, "Error!",
-                                    "Failed to save file: " + e,
+                                    "Failed to save file: " + str(e),
                                     QMessageBox.Ok, QMessageBox.Ok)
 
 

@@ -22,8 +22,8 @@ class DBStructure(QWidget):
 
     @pyqtSlot()
     def setupTreeView(self):
-        print("Setting up tree view")
-        self.model.setHorizontalHeaderLabels(["Name", "Type"])
+        self.loader.dbManager.setdbStrucuteReference(self)
+        self.loader.dbManager.sqlExecuted.connect(self.populateTreeView)
 
         self.populateTreeView()
 
@@ -32,6 +32,8 @@ class DBStructure(QWidget):
         self.parentLayout.addWidget(self.treeView)
 
     def populateTreeView(self):
+        self.model.clear()
+        self.model.setHorizontalHeaderLabels(["Name", "Type"])
         rootNode = self.model.invisibleRootItem()
         tables = self.loader.dbManager.getListofTables()
 
