@@ -1,2 +1,2 @@
 # Data Doggo (SQLite)
-[Solo hackathon project]  A SQLite database management software written in a day
+[Solo hackathon project] An attempt to write a sqlite database management software in a day
