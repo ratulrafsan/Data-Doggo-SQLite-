@@ -15,8 +15,10 @@ from components.dbManager import DBManager
 class Loader(QWidget):
     dbLoaded = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, mainWindow):
         super().__init__()
+
+        self.mainWindow = mainWindow
 
         self.label_newDB = "New Database"
         self.label_openDB = "Open Database"
@@ -37,6 +39,7 @@ class Loader(QWidget):
 
         self.btn_newDB = QCommandLinkButton(self.label_newDB)
         self.btn_openDB = QCommandLinkButton(self.label_openDB)
+        self.btn_writeChanges = QCommandLinkButton(self.label_commitTDB)
 
         self.databasePath = ""
         self.fileName = ""
@@ -60,11 +63,17 @@ class Loader(QWidget):
     def setupCommandButtons(self):
         self.btn_newDB.clicked.connect(self.newDB)
         self.btn_openDB.clicked.connect(self.newDB)
+        self.btn_writeChanges.clicked.connect(self.commitToDB)
 
         self.commandButtonLayout.addWidget(self.btn_newDB)
         self.commandButtonLayout.addWidget(self.btn_openDB)
+        self.commandButtonLayout.addWidget(self.btn_writeChanges)
 
         self.parentVerticalLayout.addLayout(self.commandButtonLayout)
+
+    def commitToDB(self):
+        if self.dbManager is not None:
+            self.dbManager.commitToDB()
 
     def setupTabs(self):
         self.tabs.addTab(self.dbStructure, self.label_dbStructure)
@@ -87,10 +96,10 @@ class Loader(QWidget):
         self.dbManager = DBManager(filePath)
         self.dbLoaded.connect(self.sqlworkbench.enableEditor)
         self.databasePath = filePath
-        self.fileName = basename(filePath)
         print(self.databasePath)
         if self.databasePath is not None:
             self.dbLoaded.emit()
+            self.dbManager.setLoaderReference(self)
 
     def setupCreateDatabase(self):
         self.LE_dbPath.setFont(self.font)
@@ -135,4 +144,5 @@ class Loader(QWidget):
         self.font.setFamily("Lucidia")
         self.font.setFixedPitch(True)
         self.font.setPointSize(10)
+
 

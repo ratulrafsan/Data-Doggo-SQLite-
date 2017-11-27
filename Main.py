@@ -10,7 +10,7 @@ class Main(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.mainSection = Loader()
+        self.mainSection = Loader(self)
         self.sqlWorkstation = SQLWorkbench(self.mainSection)
         self.vbox = QVBoxLayout(self)
         self.vbox.addWidget(self.mainSection)

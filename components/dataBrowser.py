@@ -150,7 +150,7 @@ class DataBrowser(QWidget):
         tableData = dbManager.getAllData(tableName)
         if tableData is None:
             # TODO: Add proper error message
-            print("Error: " + dbManager.error)
+            print("Error: " + str(dbManager.error))
             return
 
         for dataSet in tableData:

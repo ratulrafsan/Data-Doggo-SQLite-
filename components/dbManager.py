@@ -40,10 +40,16 @@ class DBManager(QObject):
                 self.isTable = False
             self.sqlExecuted.emit()
             print("executed: "+sql)
+            self.setStatusBarMessage("executed: " + sql)
             return True
         except Exception as e:
             self.error = e
+            print(e)
+            self.setStatusBarMessage("Error: " + str(e))
             return False
+
+    def setStatusBarMessage(self, msg):
+        self.loader.mainWindow.statusBar().showMessage(msg)
 
     def getColumnNames(self, tableName):
         try:
@@ -172,3 +178,9 @@ class DBManager(QObject):
         sql = "insert into " + tableName + " " + str(tuple(notNull)) + "values" + \
               str(tuple(["insertValue" for i in range(0, len(notNull))])) + ";"
         res = self.executor(sql)
+        if res == False:
+            print("Error addint empty row: " + str(self.error))
+
+
+    def commitToDB(self):
+        self.db.commit()
