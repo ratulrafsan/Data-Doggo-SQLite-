@@ -1,5 +1,6 @@
 from PyQt5.Qt import *
 
+
 class DataBrowser(QWidget):
     def __init__(self, loader):
         super().__init__()
@@ -20,7 +21,6 @@ class DataBrowser(QWidget):
         self.prevRow = None
         self.prevCol = None
 
-
         self.tableView = QTableWidget()
         self.initGUI()
 
@@ -40,7 +40,7 @@ class DataBrowser(QWidget):
         self.setupComboBox()
         self.btn_newRecord.clicked.connect(self.addNewRow)
         self.btn_deleteRecord.clicked.connect(self.deleteRow)
-        self.loader.dbManager.sqlExecuted.connect(self.updateComboBoxAndViewer)
+        self.loader.dbManager.sqlExecuted.connect(self.setupComboBox)
 
     def deleteRow(self):
         index = self.tableView.currentIndex()
@@ -52,7 +52,6 @@ class DataBrowser(QWidget):
 
         self.tableView.model().removeRow(index.row())
         self.tableView.model().submit()
-
 
     def addNewRow(self):
         print("adding row")
@@ -113,6 +112,7 @@ class DataBrowser(QWidget):
         self.setupAndPopulateTable(self.currentTable)
 
     def setupComboBox(self):
+        self.tableComboBox.clear()
         tables = self.loader.dbManager.getListofTables()
 
         if tables == []:
@@ -127,8 +127,8 @@ class DataBrowser(QWidget):
 
         self.tableComboBox.activated[str].connect(self.setupAndPopulateTable)
 
-        self.defaultTable = tables[0]
-        self.setupAndPopulateTable(self.defaultTable)
+        self.currentTable = tables[0]
+        self.setupAndPopulateTable(self.currentTable)
 
     def setupAndPopulateTable(self, tableName):
         self.currentTable = tableName
@@ -137,7 +137,7 @@ class DataBrowser(QWidget):
 
         dbManager = self.loader.dbManager
         self.tableView.setColumnCount(dbManager.getColumnCount(tableName))
-        #self.tableView.setColumnCount(2)
+        # self.tableView.setColumnCount(2)
 
         columnName = dbManager.getColumnNames(tableName)
         if columnName is None:
@@ -158,4 +158,3 @@ class DataBrowser(QWidget):
             self.tableView.insertRow(rowPos)
             for i, data in enumerate(dataSet):
                 self.tableView.setItem(rowPos, i, QTableWidgetItem(str(data)))
-

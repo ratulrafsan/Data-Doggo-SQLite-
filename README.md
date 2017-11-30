@@ -15,7 +15,10 @@ python3 Main.py
 ```
 
 # Bugs
-If you are creating a new database file using it, make sure you reload the file after you've created the table. Otherwise the changes won't be shown on the data browser section. (Table structure seems to work fine :/)
+~~If you are creating a new database file using it, make sure you reload the file after you've created the table. Otherwise the changes won't be shown on the data browser section. (Table structure seems to work fine :/)~~
+FIXED! 
+
+Let me know if you find any other bugs
 
 # Todo
 1. Add proper error messages!

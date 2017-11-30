@@ -2,6 +2,7 @@ import sqlite3
 
 from PyQt5.Qt import *
 
+# TODO: Clean this class..
 
 class DBManager(QObject):
     sqlExecuted = pyqtSignal()
@@ -186,8 +187,13 @@ class DBManager(QObject):
             if len(notNull) == 0:
                 notNull = colNames
                 print("[INFO: AER] else notNull" + str(notNull))
-        sql = "insert into " + tableName + " " + str(tuple(notNull)) + "values" + \
-              str(tuple(["insertValue" for i in range(0, len(notNull))])) + ";"
+        sql = "insert into " + tableName + " " + str(tuple(notNull)) + " values" + \
+              str(tuple(["insertValue" for i in range(0, len(notNull))]))
+        # odd bug, when these tuples are converted to str, a comma is added at the end
+        # e.g: insert into users ('name',)values('insertValue',)
+        # silly workaround:
+        sql = sql.replace(",)", ")")
+        print(sql)
         res = self.executor(sql)
         if res == False:
             print("Error addint empty row: " + str(self.error))
