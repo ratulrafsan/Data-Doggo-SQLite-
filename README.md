@@ -1,6 +1,6 @@
 # Data Doggo (SQLite)
 An attempt to write a sqlite database management software in a day
-
+P.S: Don't hurt yourself trying to even use this one. I wrote this as a challange. There are better professional alts : sqlitebrowser.org 
 # REQUIRES PYQT5
 
 # Installation
